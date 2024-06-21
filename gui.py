@@ -8,6 +8,83 @@ from PyQt6.QtCore import Qt
 
 from flight_search import FlightSearch
 
+
+class ResultsDialog(QDialog):
+    def __init__(self, api_response, parent=None):
+        super().__init__(parent)
+        self.initUI(api_response)
+
+    def initUI(self, api_response):
+        self.setWindowTitle('Flight Search Results')
+        self.resize(800, 600)
+
+        layout = QVBoxLayout()
+
+        self.results_table = QTableWidget()
+        self.results_table.setColumnCount(5)
+        self.results_table.setHorizontalHeaderLabels(
+            ['Flight', 'Departure', 'Arrival', 'Duration', 'Price'])
+        self.results_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(self.results_table)
+
+        self.setLayout(layout)
+
+        self.display_results(api_response)
+
+    def display_results(self, api_response):
+        # Clear previous results
+        self.results_table.setRowCount(0)
+        if 'data' in api_response and api_response['data']:
+            flight_data = api_response['data']
+            dictionaries = api_response['dictionaries']
+
+            self.results_table.setRowCount(len(flight_data))
+            
+            for row, flight in enumerate(flight_data):
+                flight_number = ", ".join(segment['carrierCode'] + segment['number']
+                                        for segment in flight['itineraries'][0]['segments'])
+                departure_time = flight['itineraries'][0]['segments'][0]['departure']['at']
+                arrival_time = flight['itineraries'][0]['segments'][-1]['arrival']['at']
+                duration = flight['itineraries'][0]['duration']
+                price = flight['price']['grandTotal'] + \
+                    " " + flight['price']['currency']
+
+                self.results_table.setItem(row, 0, QTableWidgetItem(flight_number))
+                self.results_table.setItem(
+                    row, 1, QTableWidgetItem(departure_time))
+                self.results_table.setItem(row, 2, QTableWidgetItem(arrival_time))
+                self.results_table.setItem(row, 3, QTableWidgetItem(duration))
+                self.results_table.setItem(row, 4, QTableWidgetItem(price))
+        # if 'data' in api_response and api_response['data']:
+        #     for idx, flight in enumerate(api_response['data']):
+        #         # Extract relevant information from the flight data
+        #         flight_id = flight['id']
+        #         departure_time = flight['itineraries'][0]['segments'][0]['departure']['at']
+        #         arrival_time = flight['itineraries'][0]['segments'][-1]['arrival']['at']
+        #         duration = flight['itineraries'][0]['duration']
+        #         price = flight['price']['total']
+
+        #         # Populate table rows with flight details
+        #         self.results_table.insertRow(idx)
+        #         self.results_table.setItem(idx, 0, QTableWidgetItem(flight_id))
+        #         self.results_table.setItem(
+        #             idx, 1, QTableWidgetItem(departure_time))
+        #         self.results_table.setItem(
+        #             idx, 2, QTableWidgetItem(arrival_time))
+        #         self.results_table.setItem(idx, 3, QTableWidgetItem(duration))
+        #         self.results_table.setItem(idx, 4, QTableWidgetItem(price))
+
+        #         # Resize columns to content
+        #         self.results_table.resizeColumnsToContents()
+        else:
+            # Display no results message
+            self.results_table.setRowCount(1)
+            no_results_item = QTableWidgetItem('No flights found.')
+            no_results_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.results_table.setItem(0, 0, no_results_item)
+
+
 class FlightSearchApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -84,14 +161,6 @@ class FlightSearchApp(QWidget):
         self.search_button = QPushButton('Search Flights')
         self.search_button.clicked.connect(self.search_flights)
 
-        # Results Table
-        self.results_table = QTableWidget()
-        self.results_table.setColumnCount(5)
-        self.results_table.setHorizontalHeaderLabels(
-            ['Flight', 'Departure', 'Arrival', 'Duration', 'Price'])
-        self.results_table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch)
-
         # Add all layouts to the main layout
         main_layout.addLayout(engine_layout)
         main_layout.addLayout(origin_layout)
@@ -101,7 +170,6 @@ class FlightSearchApp(QWidget):
         main_layout.addLayout(duration_layout)
         main_layout.addLayout(class_layout)
         main_layout.addWidget(self.search_button)
-        main_layout.addWidget(self.results_table)
 
         # Set main layout
         self.setLayout(main_layout)
@@ -138,53 +206,36 @@ class FlightSearchApp(QWidget):
         travel_class = self.class_selection.currentText()
         search_engine = self.engine_selection.currentText()  # Get selected search engine
 
-        # Simulate API call based on selected search engine
-        if search_engine == 'Amadeus':
-            flight_data = {
-                'origin': origin,
-                'originLocationCode': None,
-                'destinations': destinations,
-                'destinationsLocationCodes': [],
-                'departureDate': start_date,
-                'returnDate': end_date,
-                'durationOfStay': duration,
-                'adults': 2,
-                'currencyCode': 'PLN',
-                'max': 50
-            }
+        flight_data = {
+            'origin': origin,
+            'originLocationCode': None,
+            'destinations': destinations,
+            'destinationsLocationCodes': [],
+            'departureDate': start_date,
+            'returnDate': end_date,
+            'durationOfStay': duration,
+            'adults': 2,
+            'currencyCode': 'PLN',
+            'max': 50
+        }
 
-            fs = FlightSearch()
-            fs.flight_search(flight_data)
+        fs = FlightSearch()
+
+        if search_engine == 'Amadeus':
+
+            fs.flight_search_amadeus(flight_data)
 
             results = fs.search_result
 
-            self.display_results_amadeus(results)
         elif search_engine == 'Ryanair':
-            pass
+            fs.flight_search_ryanair(flight_data)
+            results = fs.search_result
         else:
             return
-
-    def display_results_amadeus(self, results):
-        flight_data = results['data']
-        dictionaries = results['dictionaries']
-
-        self.results_table.setRowCount(len(flight_data))
-
-        for row, flight in enumerate(flight_data):
-            flight_number = ", ".join(segment['carrierCode'] + segment['number']
-                                      for segment in flight['itineraries'][0]['segments'])
-            departure_time = flight['itineraries'][0]['segments'][0]['departure']['at']
-            arrival_time = flight['itineraries'][0]['segments'][-1]['arrival']['at']
-            duration = flight['itineraries'][0]['duration']
-            price = flight['price']['grandTotal'] + \
-                " " + flight['price']['currency']
-
-            self.results_table.setItem(row, 0, QTableWidgetItem(flight_number))
-            self.results_table.setItem(
-                row, 1, QTableWidgetItem(departure_time))
-            self.results_table.setItem(row, 2, QTableWidgetItem(arrival_time))
-            self.results_table.setItem(row, 3, QTableWidgetItem(duration))
-            self.results_table.setItem(row, 4, QTableWidgetItem(price))
+        
+        # Open the results dialog
+        self.results_dialog = ResultsDialog(results)
+        self.results_dialog.exec()
 
 
 class CalendarDialog(QDialog):

@@ -4,7 +4,7 @@ import requests
 from urllib.parse import urlencode, urlunparse
 
 # Credits to gabsbruh at https://github.com/gabsbruh/Mini-projects/tree/main/39.flight-deals-alert
-
+# Ryanair API needs IATA code for airport not city.
 
 class FlightSearch:
     def __init__(self) -> None:
@@ -12,7 +12,8 @@ class FlightSearch:
         self.secret_key = c.AMADEUS_API_SECRET
         self.url_token = c.AMADEUS_TOKEN
         self.url_iata_codes = c.AMADEUS_URL_IATA_CODE
-        self.url_flights = None
+        self.url_flights_amadeus = 'https://test.api.amadeus.com/v2/shopping/flight-offers'
+        self.url_flights_ryanair = 'https://services-api.ryanair.com/farfnd/v4/roundTripFares'
         self.api_header = self._get_new_token()
         self.search_result = None
 
@@ -37,7 +38,7 @@ class FlightSearch:
 
         return updated_header
 
-    def _get_iata_code(self, flight_data):
+    def _get_iata_code_amadeus(self, flight_data):
         data1 = {
             "keyword": flight_data['origin'],
             "max": 1,
@@ -46,12 +47,13 @@ class FlightSearch:
         response = requests.get(url=self.url_iata_codes,
                                 params=data1, headers=self.api_header)
         # print(response.text)
+        print(response.url)
         try:
             flight_data['originLocationCode'] = response.json()[
                 "data"][0]['iataCode']
         except (KeyError, IndexError):
             return "Not Found."
-
+    
         for dest in flight_data['destinations']:
             data2 = {
                 "keyword": dest,
@@ -60,23 +62,21 @@ class FlightSearch:
             }
             response = requests.get(
                 url=self.url_iata_codes, params=data2, headers=self.api_header)
-            # print(response.text)
+            print(response.text)
             try:
                 flight_data['destinationsLocationCodes'].append(
                     response.json()["data"][0]['iataCode'])
                 return None
             except (KeyError, IndexError):
                 return "Not Found."
+            
+    def _get_iata_code_ryanair(self, flight_data):
+        pass
 
-    def _parse_url_request(self, flight_data):
-        # Base URL components
-        scheme = 'https'
-        netloc = 'test.api.amadeus.com'
-        path = '/v2/shopping/flight-offers'
-        params = ''
-        fragment = ''
 
-        # Query parameters
+    def flight_search_amadeus(self, flight_data):
+        self._get_iata_code_amadeus(flight_data)
+
         query_params = {
             'originLocationCode': flight_data['originLocationCode'],
             'destinationLocationCode': flight_data['destinationsLocationCodes'][0],
@@ -88,22 +88,33 @@ class FlightSearch:
             'max': flight_data['max']
         }
 
-        # Encode the query parameters
-        query_string = urlencode(query_params)
-        # print("Encoded Query String:", query_string)
-
-        # Build the complete URL
-        self.url_flights = urlunparse(
-            (scheme, netloc, path, params, query_string, fragment))
-        # print("Complete URL:", self.url_flights)
-
-    def flight_search(self, flight_data):
-        self._get_iata_code(flight_data)
-        self._parse_url_request(flight_data)
-
-        response = requests.get(url=self.url_flights, headers=self.api_header)
+        response = requests.get(url=self.url_flights_amadeus, params=query_params, headers=self.api_header)
         # print(response.text)
 
         self.search_result = response.json()
 
-        pass
+        return
+    
+    def flight_search_ryanair(self, flight_data):
+        self._get_iata_code_ryanair(flight_data)
+
+        query_params = {
+            'departureAirportIataCode': flight_data['originLocationCode'],
+            'arrivalAirportIataCode': flight_data['destinationsLocationCodes'][0],
+            'outboundDepartureDateFrom': flight_data['departureDate'],
+            'outboundDepartureDateTo': flight_data['departureDate'],
+            'inboundDepartureDateFrom': flight_data['returnDate'],
+            'inboundDepartureDateTo': flight_data['returnDate'],
+            'adults': flight_data['adults'],
+            'currencyCode': flight_data['currencyCode'],
+            'max': flight_data['max']
+        }
+
+        response = requests.get(url=self.url_flights_ryanair, params=query_params)
+        print(response.url)
+        # print(response.text)
+
+        self.search_result = response.json()
+
+
+
