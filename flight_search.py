@@ -83,7 +83,7 @@ class FlightSearch:
             'departureDate': flight_data['departureDate'],
             'returnDate': flight_data['returnDate'],
             'adults': flight_data['adults'],
-            'nonStop': 'false',
+            'nonStop': 'true',
             'currencyCode': flight_data['currencyCode'],
             'max': flight_data['max']
         }
@@ -102,8 +102,8 @@ class FlightSearch:
         self._parse_url_request(flight_data)
 
         response = requests.get(url=self.url_flights, headers=self.api_header)
-        print(response.text)
+        # print(response.text)
 
-        self.search_result = response
+        self.search_result = response.json()
 
         pass
