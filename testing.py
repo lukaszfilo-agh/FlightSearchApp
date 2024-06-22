@@ -1,10 +1,10 @@
 from flight_search import FlightSearch
 
 flight_data = {
-    'origin': 'Krakow',
-    'originLocationCode': 'KRK',
-    'destinations': ['London'],
-    'destinationsLocationCodes': ['STN'],
+    'origin': 'London',
+    'originLocationCode': [],
+    'destination': ['New York'],
+    'destinationLocationCode': [],
     'departureDate' : '2024-08-21',
     'returnDate': '2024-08-31',
     'durationOfStay': 5,
@@ -17,4 +17,4 @@ fs = FlightSearch()
 fs.flight_search_ryanair(flight_data)
 
 dict = fs.search_result
-print(dict)
+# print(dict)

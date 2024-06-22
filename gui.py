@@ -208,9 +208,9 @@ class FlightSearchApp(QWidget):
 
         flight_data = {
             'origin': origin,
-            'originLocationCode': None,
-            'destinations': destinations,
-            'destinationsLocationCodes': [],
+            'originLocationCode': [],
+            'destination': destinations,
+            'destinationLocationCode': [],
             'departureDate': start_date,
             'returnDate': end_date,
             'durationOfStay': duration,
