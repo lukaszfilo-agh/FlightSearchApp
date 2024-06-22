@@ -132,11 +132,10 @@ class FlightSearch:
         departure_from = datetime.fromisoformat(flight_data['departureDate'])
         arrival_to = datetime.fromisoformat(flight_data['returnDate'])
         outbound_date = departure_from
-        inbound_date = outbound_date + timedelta(flight_data['durationOfStay'])
+        inbound_date = outbound_date + \
+            timedelta(flight_data['durationOfStay'] - 1)
         self.search_result = dict()
-        while outbound_date != arrival_to - timedelta(flight_data['durationOfStay']):
-            print(outbound_date)
-            print(inbound_date)
+        while outbound_date != arrival_to - timedelta(flight_data['durationOfStay']-2):
             query_params = {
                 'departureAirportIataCode': flight_data['originLocationCode'],
                 'outboundDepartureDateFrom': outbound_date.strftime('%Y-%m-%d'),
@@ -148,7 +147,7 @@ class FlightSearch:
                 'max': flight_data['max']
             }
             if flight_data['destinationLocationCode'] != []:
-                
+
                 for idx, dest in enumerate(flight_data['destinationLocationCode']):
                     query_params['arrivalAirportIataCode'] = dest,
                     response = requests.get(
@@ -162,16 +161,17 @@ class FlightSearch:
                     # print(response.text)
             else:
                 response = requests.get(
-                        url=self.url_flights_ryanair, params=query_params)
+                    url=self.url_flights_ryanair, params=query_params)
                 if self.search_result == {}:
-                    
+
                     self.search_result = response.json()
                 else:
                     self.search_result['fares'].extend(
-                            response.json()['fares'])
+                        response.json()['fares'])
             # print(self.search_result)
             outbound_date = outbound_date + timedelta(1)
-            inbound_date = outbound_date + timedelta(flight_data['durationOfStay'])
+            inbound_date = outbound_date + \
+                timedelta(flight_data['durationOfStay'] - 1)
         # print(response.url)
 
         # print(self.search_result)

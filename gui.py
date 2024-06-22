@@ -2,9 +2,10 @@ import sys
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
     QHBoxLayout, QComboBox, QCalendarWidget, QListWidget, QSpinBox,
-    QTableWidget, QTableWidgetItem, QHeaderView, QDialog, QDialogButtonBox
+    QTableWidget, QTableWidgetItem, QHeaderView, QDialog, QDialogButtonBox, QMenu
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QClipboard
 from datetime import datetime
 
 from flight_search import FlightSearch
@@ -33,6 +34,11 @@ class ResultsDialog(QDialog):
             QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.results_table)
 
+        self.results_table.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu)
+        self.results_table.customContextMenuRequested.connect(
+            self.show_context_menu)
+
         self.setLayout(layout)
         self.display_results_amadeus(api_response)
 
@@ -50,15 +56,44 @@ class ResultsDialog(QDialog):
             QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.results_table)
 
+        self.results_table.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu)
+        self.results_table.customContextMenuRequested.connect(
+            self.show_context_menu)
+
         self.setLayout(layout)
         self.display_results_ryanair(api_response)
+
+    def show_context_menu(self, position):
+        menu = QMenu()
+        copy_action = QAction("Copy", self)
+        copy_action.triggered.connect(self.copy_selection)
+        menu.addAction(copy_action)
+        menu.exec(self.results_table.viewport().mapToGlobal(position))
+
+    def copy_selection(self):
+        selection = self.results_table.selectedIndexes()
+        if selection:
+            rows = sorted(set(index.row() for index in selection))
+            columns = sorted(set(index.column() for index in selection))
+
+            copy_text = ""
+            for row in rows:
+                row_data = []
+                for column in columns:
+                    index = self.results_table.item(row, column)
+                    if index:
+                        row_data.append(index.text())
+                copy_text += "\t".join(row_data) + "\n"
+
+            clipboard = QApplication.clipboard()
+            clipboard.setText(copy_text.strip())
 
     def display_results_amadeus(self, api_response):
         # Clear previous results
         self.results_table.setRowCount(0)
         if 'data' in api_response and api_response['data']:
             flight_data = api_response['data']
-            dictionaries = api_response['dictionaries']
 
             self.results_table.setRowCount(len(flight_data))
 
@@ -79,27 +114,6 @@ class ResultsDialog(QDialog):
                     row, 2, QTableWidgetItem(arrival_time))
                 self.results_table.setItem(row, 3, QTableWidgetItem(duration))
                 self.results_table.setItem(row, 4, QTableWidgetItem(price))
-        # if 'data' in api_response and api_response['data']:
-        #     for idx, flight in enumerate(api_response['data']):
-        #         # Extract relevant information from the flight data
-        #         flight_id = flight['id']
-        #         departure_time = flight['itineraries'][0]['segments'][0]['departure']['at']
-        #         arrival_time = flight['itineraries'][0]['segments'][-1]['arrival']['at']
-        #         duration = flight['itineraries'][0]['duration']
-        #         price = flight['price']['total']
-
-        #         # Populate table rows with flight details
-        #         self.results_table.insertRow(idx)
-        #         self.results_table.setItem(idx, 0, QTableWidgetItem(flight_id))
-        #         self.results_table.setItem(
-        #             idx, 1, QTableWidgetItem(departure_time))
-        #         self.results_table.setItem(
-        #             idx, 2, QTableWidgetItem(arrival_time))
-        #         self.results_table.setItem(idx, 3, QTableWidgetItem(duration))
-        #         self.results_table.setItem(idx, 4, QTableWidgetItem(price))
-
-        #         # Resize columns to content
-        #         self.results_table.resizeColumnsToContents()
         else:
             # Display no results message
             self.results_table.setRowCount(1)
