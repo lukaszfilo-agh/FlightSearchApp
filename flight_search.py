@@ -12,8 +12,8 @@ class FlightSearch:
         self.secret_key = c.AMADEUS_API_SECRET
         self.url_token = c.AMADEUS_TOKEN
         self.url_iata_codes = c.AMADEUS_URL_IATA_CODE
-        self.url_flights_amadeus = 'https://test.api.amadeus.com/v2/shopping/flight-offers'
-        self.url_flights_ryanair = 'https://services-api.ryanair.com/farfnd/v4/roundTripFares'
+        self.url_flights_amadeus = c.AMADEUS_URL_FLIGHTS
+        self.url_flights_ryanair = c.RYANAIR_URL_FLIGHTS
         self.api_header = self._get_new_token()
         self.search_result = None
 
@@ -138,13 +138,24 @@ class FlightSearch:
         }
 
         if flight_data['destinationLocationCode'] != []:
-            query_params['arrivalAirportIataCode'] = flight_data['destinationLocationCode'][3],
+            self.search_result = dict()
+            for idx, dest in enumerate(flight_data['destinationLocationCode']):
+                query_params['arrivalAirportIataCode'] = dest,
+                response = requests.get(url=self.url_flights_ryanair, params=query_params)
+                if idx == 0:
+                    self.search_result = response.json()
+                else:
+                    self.search_result['fares'].extend(response.json()['fares'])
+                # self.search_result.update(response.json())
+                print(response.text)
+        else:
+            response = requests.get(url=self.url_flights_ryanair, params=query_params)
+            self.search_result = response.json()
+        # print(response.url)
+        
 
-        response = requests.get(url=self.url_flights_ryanair, params=query_params)
-        print(response.url)
-        print(response.text)
-
-        self.search_result = response.json()
+        
+        # print(self.search_result)
 
 
 
