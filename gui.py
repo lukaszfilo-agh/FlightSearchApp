@@ -5,16 +5,21 @@ from PyQt6.QtWidgets import (
     QTableWidget, QTableWidgetItem, QHeaderView, QDialog, QDialogButtonBox
 )
 from PyQt6.QtCore import Qt
+from datetime import datetime
 
 from flight_search import FlightSearch
 
 
 class ResultsDialog(QDialog):
-    def __init__(self, api_response, parent=None):
+    def __init__(self, api_response, search_engine, parent=None):
         super().__init__(parent)
-        self.initUI(api_response)
+        self.search_engine = search_engine
+        if self.search_engine == 'Amadeus':
+            self.initUI_amadeus(api_response)
+        elif self.search_engine == 'Ryanair':  
+            self.initUI_ryanair(api_response)  
 
-    def initUI(self, api_response):
+    def initUI_amadeus(self, api_response):
         self.setWindowTitle('Flight Search Results')
         self.resize(800, 600)
 
@@ -29,10 +34,24 @@ class ResultsDialog(QDialog):
         layout.addWidget(self.results_table)
 
         self.setLayout(layout)
+        self.display_results_amadeus(api_response)
 
-        self.display_results(api_response)
+    def initUI_ryanair(self, api_response):
+        self.setWindowTitle('Flight Search Results')
+        self.resize(1200, 800)
 
-    def display_results(self, api_response):
+        layout = QVBoxLayout()
+
+        self.results_table = QTableWidget()
+        self.results_table.setColumnCount(8)
+        self.results_table.setHorizontalHeaderLabels(['Flight Numbers', 'Origin', 'Destination', 'Outbound departure date', 'Outbound arrival date', 'Inbound departure date', 'Inbound arrival date', 'Price'])
+        self.results_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(self.results_table)
+
+        self.setLayout(layout)
+        self.display_results_ryanair(api_response)
+
+    def display_results_amadeus(self, api_response):
         # Clear previous results
         self.results_table.setRowCount(0)
         if 'data' in api_response and api_response['data']:
@@ -77,6 +96,55 @@ class ResultsDialog(QDialog):
 
         #         # Resize columns to content
         #         self.results_table.resizeColumnsToContents()
+        else:
+            # Display no results message
+            self.results_table.setRowCount(1)
+            no_results_item = QTableWidgetItem('No flights found.')
+            no_results_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.results_table.setItem(0, 0, no_results_item)
+
+
+    def display_results_ryanair(self, api_response):
+        # Clear previous results
+        self.results_table.setRowCount(0)
+        if 'fares' in api_response and api_response['fares']:
+            flight_data = api_response['fares']
+
+            self.results_table.setRowCount(len(flight_data))
+
+            for row, fare in enumerate(flight_data):
+                flight_numbers = f"{fare['outbound']['flightNumber']} {fare['inbound']['flightNumber']}"
+                origin = fare['outbound']['departureAirport']['name']
+                destination = fare['outbound']['arrivalAirport']['name']
+                out_dep_date = datetime.fromisoformat(fare['outbound']['departureDate']).strftime('%H:%M %d.%m.%Y')
+                out_arr_date = datetime.fromisoformat(fare['outbound']['arrivalDate']).strftime('%H:%M %d.%m.%Y')
+                in_dep_date = datetime.fromisoformat(fare['inbound']['departureDate']).strftime('%H:%M %d.%m.%Y')
+                in_arr_date = datetime.fromisoformat(fare['inbound']['arrivalDate']).strftime('%H:%M %d.%m.%Y')
+                price = f"{fare['summary']['price']['value']}{fare['summary']['price']['currencyCode']}"
+
+                self.results_table.setItem(row, 0, QTableWidgetItem(flight_numbers))
+                self.results_table.setItem(row, 1, QTableWidgetItem(origin))
+                self.results_table.setItem(row, 2, QTableWidgetItem(destination))
+                self.results_table.setItem(row, 3, QTableWidgetItem(out_dep_date))
+                self.results_table.setItem(row, 4, QTableWidgetItem(out_arr_date))
+                self.results_table.setItem(row, 5, QTableWidgetItem(in_dep_date))
+                self.results_table.setItem(row, 6, QTableWidgetItem(in_arr_date))
+                self.results_table.setItem(row, 7, QTableWidgetItem(price))
+            # for row, flight in enumerate(flight_data):
+            #     flight_number = ", ".join(segment['carrierCode'] + segment['number']
+            #                             for segment in flight['itineraries'][0]['segments'])
+            #     departure_time = flight['itineraries'][0]['segments'][0]['departure']['at']
+            #     arrival_time = flight['itineraries'][0]['segments'][-1]['arrival']['at']
+            #     duration = flight['itineraries'][0]['duration']
+            #     price = flight['price']['grandTotal'] + \
+            #         " " + flight['price']['currency']
+
+            #     self.results_table.setItem(row, 0, QTableWidgetItem(flight_number))
+            #     self.results_table.setItem(
+            #         row, 1, QTableWidgetItem(departure_time))
+            #     self.results_table.setItem(row, 2, QTableWidgetItem(arrival_time))
+            #     self.results_table.setItem(row, 3, QTableWidgetItem(duration))
+            #     self.results_table.setItem(row, 4, QTableWidgetItem(price))
         else:
             # Display no results message
             self.results_table.setRowCount(1)
@@ -153,7 +221,7 @@ class FlightSearchApp(QWidget):
         engine_label = QLabel('Search Engine:')
         self.engine_selection = QComboBox()
         # Add more options if needed
-        self.engine_selection.addItems(['Amadeus', 'Ryanair'])
+        self.engine_selection.addItems(['Ryanair', 'Amadeus'])
         engine_layout.addWidget(engine_label)
         engine_layout.addWidget(self.engine_selection)
 
@@ -234,7 +302,7 @@ class FlightSearchApp(QWidget):
             return
         
         # Open the results dialog
-        self.results_dialog = ResultsDialog(results)
+        self.results_dialog = ResultsDialog(results, search_engine)
         self.results_dialog.exec()
 
 

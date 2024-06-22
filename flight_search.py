@@ -85,20 +85,21 @@ class FlightSearch:
         except (KeyError, IndexError):
             return "Not Found."
         
-        for dest in flight_data['destination']:
-            data2 = {
-                "keyword": dest,
-                "max": 1,
-                "include": "AIRPORTS",
-            }
-            response = requests.get(
-                url=self.url_iata_codes, params=data2, headers=self.api_header)
-            try:
-                for rel in response.json()["data"][0]["relationships"]:
-                    if rel["type"] == "Airport":
-                        flight_data['destinationLocationCode'].append(rel["id"])
-            except (KeyError, IndexError):
-                return "Not Found."
+        if flight_data['destination'] != []:
+            for dest in flight_data['destination']:
+                data2 = {
+                    "keyword": dest,
+                    "max": 1,
+                    "include": "AIRPORTS",
+                }
+                response = requests.get(
+                    url=self.url_iata_codes, params=data2, headers=self.api_header)
+                try:
+                    for rel in response.json()["data"][0]["relationships"]:
+                        if rel["type"] == "Airport":
+                            flight_data['destinationLocationCode'].append(rel["id"])
+                except (KeyError, IndexError):
+                    return "Not Found."
 
 
     def flight_search_amadeus(self, flight_data):
@@ -127,7 +128,6 @@ class FlightSearch:
 
         query_params = {
             'departureAirportIataCode': flight_data['originLocationCode'],
-            'arrivalAirportIataCode': flight_data['destinationLocationCode'][0],
             'outboundDepartureDateFrom': flight_data['departureDate'],
             'outboundDepartureDateTo': flight_data['departureDate'],
             'inboundDepartureDateFrom': flight_data['returnDate'],
@@ -137,9 +137,12 @@ class FlightSearch:
             'max': flight_data['max']
         }
 
+        if flight_data['destinationLocationCode'] != []:
+            query_params['arrivalAirportIataCode'] = flight_data['destinationLocationCode'][3],
+
         response = requests.get(url=self.url_flights_ryanair, params=query_params)
-        # print(response.url)
-        # print(response.text)
+        print(response.url)
+        print(response.text)
 
         self.search_result = response.json()
 
