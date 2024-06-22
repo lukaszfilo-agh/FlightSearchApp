@@ -3,8 +3,11 @@ import requests
 
 from urllib.parse import urlencode, urlunparse
 
+from datetime import datetime, timedelta
+
 # Credits to gabsbruh at https://github.com/gabsbruh/Mini-projects/tree/main/39.flight-deals-alert
 # Ryanair API needs IATA code for airport not city.
+
 
 class FlightSearch:
     def __init__(self) -> None:
@@ -53,7 +56,7 @@ class FlightSearch:
                 "data"][0]['iataCode'])
         except (KeyError, IndexError):
             return "Not Found."
-    
+
         for dest in flight_data['destination']:
             data2 = {
                 "keyword": dest,
@@ -69,7 +72,7 @@ class FlightSearch:
                 return None
             except (KeyError, IndexError):
                 return "Not Found."
-            
+
     def _get_iata_code_ryanair(self, flight_data):
         data1 = {
             "keyword": flight_data['origin'],
@@ -84,7 +87,7 @@ class FlightSearch:
                     flight_data['originLocationCode'].append(rel["id"])
         except (KeyError, IndexError):
             return "Not Found."
-        
+
         if flight_data['destination'] != []:
             for dest in flight_data['destination']:
                 data2 = {
@@ -97,10 +100,10 @@ class FlightSearch:
                 try:
                     for rel in response.json()["data"][0]["relationships"]:
                         if rel["type"] == "Airport":
-                            flight_data['destinationLocationCode'].append(rel["id"])
+                            flight_data['destinationLocationCode'].append(
+                                rel["id"])
                 except (KeyError, IndexError):
                     return "Not Found."
-
 
     def flight_search_amadeus(self, flight_data):
         self._get_iata_code_amadeus(flight_data)
@@ -116,16 +119,26 @@ class FlightSearch:
             'max': flight_data['max']
         }
 
-        response = requests.get(url=self.url_flights_amadeus, params=query_params, headers=self.api_header)
+        response = requests.get(
+            url=self.url_flights_amadeus, params=query_params, headers=self.api_header)
         # print(response.text)
 
         self.search_result = response.json()
 
         return
-    
+
     def flight_search_ryanair(self, flight_data):
         self._get_iata_code_ryanair(flight_data)
-
+        #testing departures and arrivals dates
+        out_from = datetime.fromisoformat(flight_data['departureDate'])
+        in_to = datetime.fromisoformat(flight_data['returnDate'])
+        out_to = in_to - timedelta(int(flight_data['minimaldurationOfStay']))
+        in_from = out_from + \
+            timedelta(int(flight_data['minimaldurationOfStay']))
+        print(out_from, in_to)
+        print(out_to, in_from)
+        print(in_to - out_from)
+        #
         query_params = {
             'departureAirportIataCode': flight_data['originLocationCode'],
             'outboundDepartureDateFrom': flight_data['departureDate'],
@@ -141,21 +154,19 @@ class FlightSearch:
             self.search_result = dict()
             for idx, dest in enumerate(flight_data['destinationLocationCode']):
                 query_params['arrivalAirportIataCode'] = dest,
-                response = requests.get(url=self.url_flights_ryanair, params=query_params)
+                response = requests.get(
+                    url=self.url_flights_ryanair, params=query_params)
                 if idx == 0:
                     self.search_result = response.json()
                 else:
-                    self.search_result['fares'].extend(response.json()['fares'])
+                    self.search_result['fares'].extend(
+                        response.json()['fares'])
                 # self.search_result.update(response.json())
-                print(response.text)
+                # print(response.text)
         else:
-            response = requests.get(url=self.url_flights_ryanair, params=query_params)
+            response = requests.get(
+                url=self.url_flights_ryanair, params=query_params)
             self.search_result = response.json()
         # print(response.url)
-        
 
-        
         # print(self.search_result)
-
-
-

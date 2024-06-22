@@ -1,6 +1,6 @@
 from flight_search import FlightSearch
 from datetime import datetime
-import pprint 
+import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 flight_data = {
@@ -8,9 +8,9 @@ flight_data = {
     'originLocationCode': [],
     'destination': ['London'],
     'destinationLocationCode': [],
-    'departureDate' : '2024-08-21',
+    'departureDate': '2024-08-21',
     'returnDate': '2024-08-31',
-    'durationOfStay': 5,
+    'minimaldurationOfStay': 5,
     'adults': 2,
     'currencyCode': 'PLN',
     'max': 50
@@ -20,7 +20,7 @@ fs = FlightSearch()
 fs.flight_search_ryanair(flight_data)
 
 dict = fs.search_result
-pp.pprint(dict['fares'])
+# pp.pprint(dict['fares'])
 
 # for row, fare in enumerate(dict['fares']):
 #     pp.pprint(fare)
@@ -41,5 +41,3 @@ pp.pprint(dict['fares'])
 #     print(fare['summary']['price']['value'])
 #     print(fare['summary']['price']['currencyCode'])
 #     print(row)
-
-    
