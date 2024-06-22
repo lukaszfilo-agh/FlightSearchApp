@@ -143,21 +143,6 @@ class ResultsDialog(QDialog):
                 self.results_table.setItem(
                     row, 6, QTableWidgetItem(in_arr_date))
                 self.results_table.setItem(row, 7, QTableWidgetItem(price))
-            # for row, flight in enumerate(flight_data):
-            #     flight_number = ", ".join(segment['carrierCode'] + segment['number']
-            #                             for segment in flight['itineraries'][0]['segments'])
-            #     departure_time = flight['itineraries'][0]['segments'][0]['departure']['at']
-            #     arrival_time = flight['itineraries'][0]['segments'][-1]['arrival']['at']
-            #     duration = flight['itineraries'][0]['duration']
-            #     price = flight['price']['grandTotal'] + \
-            #         " " + flight['price']['currency']
-
-            #     self.results_table.setItem(row, 0, QTableWidgetItem(flight_number))
-            #     self.results_table.setItem(
-            #         row, 1, QTableWidgetItem(departure_time))
-            #     self.results_table.setItem(row, 2, QTableWidgetItem(arrival_time))
-            #     self.results_table.setItem(row, 3, QTableWidgetItem(duration))
-            #     self.results_table.setItem(row, 4, QTableWidgetItem(price))
         else:
             # Display no results message
             self.results_table.setRowCount(1)
@@ -294,7 +279,7 @@ class FlightSearchApp(QWidget):
             'destinationLocationCode': [],
             'departureDate': start_date,
             'returnDate': end_date,
-            'minimaldurationOfStay': minimal_duration,
+            'durationOfStay': minimal_duration,
             'adults': 2,
             'currencyCode': 'PLN',
             'max': 50
