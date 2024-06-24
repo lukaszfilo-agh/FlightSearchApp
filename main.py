@@ -1,3 +1,3 @@
-from flight_search import FlightSearch
+from FlightSearch import FlightSearch
 
 from datetime import datetime, timedelta
