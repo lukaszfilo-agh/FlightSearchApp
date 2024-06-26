@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QClipboard
 from datetime import datetime
 
+# Color price cell according to price
 
 class ResultsDialog(QDialog):
     def __init__(self, api_response, search_engine, parent=None):
@@ -29,6 +30,10 @@ class ResultsDialog(QDialog):
             ['Flight', 'Departure', 'Arrival', 'Duration', 'Price'])
         self.results_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch)
+        self.results_table.setAlternatingRowColors(True)
+        self.results_table.setStyleSheet(
+            "alternate-background-color: #f0f0f0; background-color: #ffffff;")
+
         layout.addWidget(self.results_table)
 
         self.results_table.setContextMenuPolicy(
@@ -58,6 +63,10 @@ class ResultsDialog(QDialog):
         self.results_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch)
         self.results_table.resizeColumnsToContents()
+        self.results_table.setAlternatingRowColors(True)
+        self.results_table.setStyleSheet(
+            "alternate-background-color: #4a4a4a; background-color: #272727;")
+
         layout.addWidget(self.results_table)
 
         self.results_table.setContextMenuPolicy(
