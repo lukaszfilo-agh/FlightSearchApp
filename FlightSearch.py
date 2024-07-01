@@ -1,15 +1,16 @@
 import constants as c
 import requests
 
-from urllib.parse import urlencode, urlunparse
-
 from datetime import datetime, timedelta
 
 # Credits to gabsbruh at https://github.com/gabsbruh/Mini-projects/tree/main/39.flight-deals-alert
-# Ryanair API needs IATA code for airport not city.
 
 
 class FlightSearch:
+    """
+    Class responsible for requests to Amadeus and Ryanair API
+    """
+
     def __init__(self) -> None:
         self.api_key = c.AMADEUS_API_KEY
         self.secret_key = c.AMADEUS_API_SECRET
@@ -21,6 +22,9 @@ class FlightSearch:
         self.search_result = None
 
     def _get_new_token(self):
+        """
+        Modyfing header to get acces to Amadeus API
+        """
         head = {
             "content-type": 'application/x-www-form-urlencoded',
         }
@@ -42,6 +46,9 @@ class FlightSearch:
         return updated_header
 
     def _get_iata_code_amadeus(self, flight_data):
+        """
+        Getting IATA code for city selected in flight_data dictionary
+        """
         data1 = {
             "keyword": flight_data['origin'],
             "max": 1,
@@ -74,6 +81,10 @@ class FlightSearch:
                 return "Not Found."
 
     def _get_iata_code_ryanair(self, flight_data):
+        # Ryanair API needs IATA code for airport not city.
+        """
+        Getting IATA codes for all airport avaible at origin or destination selected in flight_data dictionary
+        """
         data1 = {
             "keyword": flight_data['origin'],
             "max": 1,
@@ -106,6 +117,9 @@ class FlightSearch:
                     return "Not Found."
 
     def flight_search_amadeus(self, flight_data):
+        """
+        Filtering flights in Amadeus according to parameters in flight_data dictionary
+        """
         self._get_iata_code_amadeus(flight_data)
 
         query_params = {
@@ -128,6 +142,9 @@ class FlightSearch:
         return
 
     def flight_search_ryanair(self, flight_data):
+        """
+        Filtering flights in Ryanair according to parameters in flight_data dictionary
+        """
         self._get_iata_code_ryanair(flight_data)
         departure_from = datetime.fromisoformat(flight_data['departureDate'])
         arrival_to = datetime.fromisoformat(flight_data['returnDate'])

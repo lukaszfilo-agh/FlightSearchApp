@@ -1,6 +1,7 @@
 from FlightSearch import FlightSearch
 from datetime import datetime
 import pprint
+import requests
 pp = pprint.PrettyPrinter(indent=4)
 
 flight_data = {
@@ -16,8 +17,11 @@ flight_data = {
     'max': 50
 }
 
-fs = FlightSearch()
-fs.flight_search_ryanair(flight_data)
+# fs = FlightSearch()
+# fs.flight_search_ryanair(flight_data)
+
+page = requests.get('http://www.airportcodes.org/')
+print(page.text)
 
 dict = fs.search_result
 # pp.pprint(dict['fares'])

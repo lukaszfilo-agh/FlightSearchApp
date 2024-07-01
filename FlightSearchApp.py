@@ -1,7 +1,6 @@
-import sys
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
-    QHBoxLayout, QComboBox, QCalendarWidget, QListWidget, QSpinBox, QDialog, QDialogButtonBox
+    QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+    QComboBox, QCalendarWidget, QListWidget, QSpinBox, QDialog, QDialogButtonBox
 )
 
 from FlightSearch import FlightSearch
@@ -171,10 +170,3 @@ class CalendarDialog(QDialog):
     def accept(self):
         self.selected_date = self.calendar.selectedDate()
         super().accept()
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = FlightSearchApp()
-    ex.show()
-    sys.exit(app.exec())
