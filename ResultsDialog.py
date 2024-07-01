@@ -9,40 +9,11 @@ from datetime import datetime
 
 # Color price cell according to price
 
+
 class ResultsDialog(QDialog):
-    def __init__(self, api_response, search_engine, parent=None):
+    def __init__(self, api_response, parent=None):
         super().__init__(parent)
-        self.search_engine = search_engine
-        if self.search_engine == 'Amadeus':
-            self.initUI_amadeus(api_response)
-        elif self.search_engine == 'Ryanair':
-            self.initUI_ryanair(api_response)
-
-    def initUI_amadeus(self, api_response):
-        self.setWindowTitle('Flight Search Results')
-        self.resize(800, 600)
-
-        layout = QVBoxLayout()
-
-        self.results_table = QTableWidget()
-        self.results_table.setColumnCount(5)
-        self.results_table.setHorizontalHeaderLabels(
-            ['Flight', 'Departure', 'Arrival', 'Duration', 'Price'])
-        self.results_table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch)
-        self.results_table.setAlternatingRowColors(True)
-        self.results_table.setStyleSheet(
-            "alternate-background-color: #f0f0f0; background-color: #ffffff;")
-
-        layout.addWidget(self.results_table)
-
-        self.results_table.setContextMenuPolicy(
-            Qt.ContextMenuPolicy.CustomContextMenu)
-        self.results_table.customContextMenuRequested.connect(
-            self.show_context_menu)
-
-        self.setLayout(layout)
-        self.display_results_amadeus(api_response)
+        self.initUI_ryanair(api_response)
 
     def initUI_ryanair(self, api_response):
         self.setWindowTitle('Flight Search Results')
@@ -101,38 +72,6 @@ class ResultsDialog(QDialog):
 
             clipboard = QApplication.clipboard()
             clipboard.setText(copy_text.strip())
-
-    def display_results_amadeus(self, api_response):
-        # Clear previous results
-        self.results_table.setRowCount(0)
-        if 'data' in api_response and api_response['data']:
-            flight_data = api_response['data']
-
-            self.results_table.setRowCount(len(flight_data))
-
-            for row, flight in enumerate(flight_data):
-                flight_number = ", ".join(segment['carrierCode'] + segment['number']
-                                          for segment in flight['itineraries'][0]['segments'])
-                departure_time = flight['itineraries'][0]['segments'][0]['departure']['at']
-                arrival_time = flight['itineraries'][0]['segments'][-1]['arrival']['at']
-                duration = flight['itineraries'][0]['duration']
-                price = flight['price']['grandTotal'] + \
-                    " " + flight['price']['currency']
-
-                self.results_table.setItem(
-                    row, 0, QTableWidgetItem(flight_number))
-                self.results_table.setItem(
-                    row, 1, QTableWidgetItem(departure_time))
-                self.results_table.setItem(
-                    row, 2, QTableWidgetItem(arrival_time))
-                self.results_table.setItem(row, 3, QTableWidgetItem(duration))
-                self.results_table.setItem(row, 4, QTableWidgetItem(price))
-        else:
-            # Display no results message
-            self.results_table.setRowCount(1)
-            no_results_item = QTableWidgetItem('No flights found.')
-            no_results_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.results_table.setItem(0, 0, no_results_item)
 
     def display_results_ryanair(self, api_response):
         # Clear previous results

@@ -63,21 +63,11 @@ class FlightSearchApp(QWidget):
         duration_layout.addWidget(duration_label)
         duration_layout.addWidget(self.duration_input)
 
-        # Search Engine Selection
-        engine_layout = QHBoxLayout()
-        engine_label = QLabel('Search Engine:')
-        self.engine_selection = QComboBox()
-        # Add more options if needed
-        self.engine_selection.addItems(['Ryanair', 'Amadeus'])
-        engine_layout.addWidget(engine_label)
-        engine_layout.addWidget(self.engine_selection)
-
         # Search Button
         self.search_button = QPushButton('Search Flights')
         self.search_button.clicked.connect(self.search_flights)
 
         # Add all layouts to the main layout
-        main_layout.addLayout(engine_layout)
         main_layout.addLayout(origin_layout)
         main_layout.addLayout(destination_layout)
         main_layout.addLayout(start_date_layout)
@@ -117,7 +107,6 @@ class FlightSearchApp(QWidget):
         start_date = self.start_date_label.text()
         end_date = self.end_date_label.text()
         minimal_duration = self.duration_input.value()
-        search_engine = self.engine_selection.currentText()  # Get selected search engine
 
         flight_data = {
             'origin': origin,
@@ -134,18 +123,10 @@ class FlightSearchApp(QWidget):
 
         fs = FlightSearch()
 
-        if search_engine == 'Amadeus':
-            fs.flight_search_amadeus(flight_data)
-            results = fs.search_result
-
-        elif search_engine == 'Ryanair':
-            fs.flight_search_ryanair(flight_data)
-            results = fs.search_result
-        else:
-            return
+        fs.flight_search_ryanair(flight_data)
 
         # Open the results dialog
-        self.results_dialog = ResultsDialog(results, search_engine)
+        self.results_dialog = ResultsDialog(fs.search_result)
         self.results_dialog.exec()
 
 

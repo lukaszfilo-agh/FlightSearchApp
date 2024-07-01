@@ -7,7 +7,7 @@ pp = pprint.PrettyPrinter(indent=4)
 flight_data = {
     'origin': 'Krakow',
     'originLocationCode': [],
-    'destination': [],
+    'destination': ['London'],
     'destinationLocationCode': [],
     'departureDate': '2024-07-24',
     'returnDate': '2024-07-30',
@@ -17,14 +17,11 @@ flight_data = {
     'max': 50
 }
 
-# fs = FlightSearch()
-# fs.flight_search_ryanair(flight_data)
-
-page = requests.get('http://www.airportcodes.org/')
-print(page.text)
+fs = FlightSearch()
+fs.flight_search_ryanair(flight_data)
 
 dict = fs.search_result
-# pp.pprint(dict['fares'])
+pp.pprint(dict['fares'])
 
 # for row, fare in enumerate(dict['fares']):
 #     # pp.pprint(fare)
