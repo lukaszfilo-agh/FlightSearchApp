@@ -7,7 +7,7 @@ pp = pprint.PrettyPrinter(indent=4)
 flight_data = {
     'origin': 'Krakow',
     'originLocationCode': [],
-    'destination': ['London'],
+    'destination': ['Oslo'],
     'destinationLocationCode': [],
     'departureDate': '2024-07-24',
     'returnDate': '2024-07-30',

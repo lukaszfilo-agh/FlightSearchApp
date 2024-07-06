@@ -23,24 +23,49 @@ class FlightSearch:
         """
         response = requests.get(url=self.url_iata_codes)
 
-        try:
-            for rel in response.json():
-                if rel["city"]["name"] == flight_data["origin"]:
-                    flight_data['originLocationCode'].append(rel["code"])
-        except (KeyError, IndexError):
-            return "Not Found."
+        origin_code = self._parse_iata_code(response, flight_data["origin"])
+        flight_data['originLocationCode'] = origin_code
+
+        # try:
+        #     for rel in response.json():
+        #         if rel["city"]["name"] == flight_data["origin"]:
+        #             flight_data['originLocationCode'].append(rel["code"])
+        # except (KeyError, IndexError):
+        #     print('EXCEPTION HERE 1')
 
         if flight_data['destination'] != []:
-            for dest in flight_data['destination']:
-                response = requests.get(url=self.url_iata_codes)
-                try:
-                    for rel in response.json():
-                        if rel["city"]["name"] in flight_data['destination']:
-                            flight_data['destinationLocationCode'].append(
-                                rel["code"])
-                except (KeyError, IndexError):
-                    return "Not Found."
-        print(flight_data)
+            dest_code = self._parse_iata_code(
+                response, flight_data["destination"])
+            flight_data['destinationLocationCode'] = dest_code
+
+            # try:
+            #     for rel in response.json():
+            #         if rel["city"]["name"] in flight_data['destination']:
+            #             flight_data['destinationLocationCode'].append(rel["code"])
+            #         elif "macCity" in rel.keys():
+            #             if rel["macCity"]["name"] != rel["city"]["name"]:
+            #                 if rel["macCity"]["name"] in flight_data['destination']:
+            #                     flight_data['destinationLocationCode'].append(rel["code"])
+            # except (KeyError, IndexError):
+            #     print('EXCEPTION HERE 2')
+        # print(flight_data)
+
+    def _parse_iata_code(self, response: requests.Response, city: str):
+        """
+        Getting iata code from provided city
+        """
+        result = []
+        try:
+            for rel in response.json():
+                if rel["city"]["name"] in city:
+                    result.append(rel["code"])
+                elif "macCity" in rel.keys():
+                    if rel["macCity"]["name"] != rel["city"]["name"]:
+                        if rel["macCity"]["name"] in city:
+                            result.append(rel["code"])
+            return result
+        except:
+            print('EXC')
 
     def flight_search_ryanair(self, flight_data):
         """
