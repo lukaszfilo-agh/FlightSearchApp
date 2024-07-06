@@ -38,6 +38,11 @@ class ResultsDialog(QDialog):
         self.results_table.setStyleSheet(
             "alternate-background-color: #4a4a4a; background-color: #272727;")
 
+        # Enable sorting
+        self.results_table.setSortingEnabled(True)
+        self.results_table.horizontalHeader().setSortIndicatorShown(True)
+        self.results_table.horizontalHeader().setSectionsClickable(True)
+
         layout.addWidget(self.results_table)
 
         self.results_table.setContextMenuPolicy(
@@ -96,7 +101,9 @@ class ResultsDialog(QDialog):
                     fare['inbound']['departureDate']).strftime('%H:%M')
                 in_arr_time = datetime.fromisoformat(
                     fare['inbound']['arrivalDate']).strftime('%H:%M')
-                price = f"{fare['summary']['price']['value']}{fare['summary']['price']['currencyCode']}"
+                price_value = fare['summary']['price']['value']
+                price_currency = fare['summary']['price']['currencyCode']
+                price = f"{price_value}{price_currency}"
 
                 self.results_table.setItem(
                     row, 0, QTableWidgetItem(flight_numbers))
@@ -114,7 +121,10 @@ class ResultsDialog(QDialog):
                     row, 6, QTableWidgetItem(in_dep_time))
                 self.results_table.setItem(
                     row, 7, QTableWidgetItem(in_arr_time))
-                self.results_table.setItem(row, 8, QTableWidgetItem(price))
+                
+                price_item = QTableWidgetItem(price)
+                price_item.setData(Qt.ItemDataRole.UserRole, price_value)
+                self.results_table.setItem(row, 8, price_item)
         else:
             # Display no results message
             self.results_table.setRowCount(1)
