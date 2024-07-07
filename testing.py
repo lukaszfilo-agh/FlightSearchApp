@@ -18,7 +18,7 @@ flight_data = {
 }
 
 fs = FlightSearch()
-fs.flight_search_ryanair(flight_data)
+fs.flight_search(flight_data)
 
 dict = fs.search_result
 pp.pprint(dict['fares'])

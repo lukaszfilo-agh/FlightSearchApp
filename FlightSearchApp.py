@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-    QComboBox, QCalendarWidget, QListWidget, QSpinBox, QDialog, QDialogButtonBox
+    QCalendarWidget, QListWidget, QSpinBox, QDialog, QDialogButtonBox
 )
 
 from FlightSearch import FlightSearch
@@ -8,11 +8,18 @@ from ResultsDialog import ResultsDialog
 
 
 class FlightSearchApp(QWidget):
+    """
+    Class resposible for displaying main window GUI for flight search
+    """
+
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
+        """
+        Function responsible for initializing GUI for main window
+        """
         main_layout = QVBoxLayout()
 
         # Origin Input
@@ -24,16 +31,21 @@ class FlightSearchApp(QWidget):
         origin_layout.addWidget(self.origin_input)
 
         # Destination Input
-        destination_layout = QVBoxLayout()
+        destination_layout_H = QHBoxLayout()
+        destination_layout_V = QVBoxLayout()
         destination_label = QLabel('Destinations:')
         self.destination_input = QLineEdit()
         self.add_destination_button = QPushButton('Add Destination')
         self.add_destination_button.clicked.connect(self.add_destination)
+        self.clear_destination_button = QPushButton('Clear Destinations')
+        self.clear_destination_button.clicked.connect(self.clear_destinations)
         self.destination_list = QListWidget()
-        destination_layout.addWidget(destination_label)
-        destination_layout.addWidget(self.destination_input)
-        destination_layout.addWidget(self.add_destination_button)
-        destination_layout.addWidget(self.destination_list)
+        destination_layout_H.addWidget(destination_label)
+        destination_layout_H.addWidget(self.destination_input)
+        destination_layout_H.addWidget(self.clear_destination_button)
+        destination_layout_V.addLayout(destination_layout_H)
+        destination_layout_V.addWidget(self.add_destination_button)
+        destination_layout_V.addWidget(self.destination_list)
 
         # Start Date Input
         start_date_layout = QHBoxLayout()
@@ -69,7 +81,7 @@ class FlightSearchApp(QWidget):
 
         # Add all layouts to the main layout
         main_layout.addLayout(origin_layout)
-        main_layout.addLayout(destination_layout)
+        main_layout.addLayout(destination_layout_V)
         main_layout.addLayout(start_date_layout)
         main_layout.addLayout(end_date_layout)
         main_layout.addLayout(duration_layout)
@@ -80,13 +92,17 @@ class FlightSearchApp(QWidget):
 
         # Set window title and size
         self.setWindowTitle('Flight Search App')
-        self.resize(800, 600)
+        self.resize(500, 600)
 
     def add_destination(self):
         destination = self.destination_input.text()
         if destination:
             self.destination_list.addItem(destination)
             self.destination_input.clear()
+
+    def clear_destinations(self):
+        self.destination_input.clear()
+        self.destination_list.clear()
 
     def show_start_calendar(self):
         self.calendar_dialog = CalendarDialog(self)
@@ -123,7 +139,7 @@ class FlightSearchApp(QWidget):
 
         fs = FlightSearch()
 
-        fs.flight_search_ryanair(flight_data)
+        fs.flight_search(flight_data)
 
         # Open the results dialog
         self.results_dialog = ResultsDialog(fs.search_result)

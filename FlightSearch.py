@@ -16,39 +16,21 @@ class FlightSearch:
         self.url_flights_ryanair = c.RYANAIR_URL_FLIGHTS
         self.search_result = None
 
-    def _get_iata_code_ryanair(self, flight_data):
+    def _get_iata_code(self, flight_data):
         # Ryanair API needs IATA code for airport not city.
         """
         Getting IATA codes for all airport avaible at origin or destination selected in flight_data dictionary
         """
         response = requests.get(url=self.url_iata_codes)
+        origin = flight_data["origin"]
+        destination = flight_data["destination"]
 
-        origin_code = self._parse_iata_code(response, flight_data["origin"])
+        origin_code = self._parse_iata_code(response, origin)
         flight_data['originLocationCode'] = origin_code
 
-        # try:
-        #     for rel in response.json():
-        #         if rel["city"]["name"] == flight_data["origin"]:
-        #             flight_data['originLocationCode'].append(rel["code"])
-        # except (KeyError, IndexError):
-        #     print('EXCEPTION HERE 1')
-
         if flight_data['destination'] != []:
-            dest_code = self._parse_iata_code(
-                response, flight_data["destination"])
+            dest_code = self._parse_iata_code(response, destination)
             flight_data['destinationLocationCode'] = dest_code
-
-            # try:
-            #     for rel in response.json():
-            #         if rel["city"]["name"] in flight_data['destination']:
-            #             flight_data['destinationLocationCode'].append(rel["code"])
-            #         elif "macCity" in rel.keys():
-            #             if rel["macCity"]["name"] != rel["city"]["name"]:
-            #                 if rel["macCity"]["name"] in flight_data['destination']:
-            #                     flight_data['destinationLocationCode'].append(rel["code"])
-            # except (KeyError, IndexError):
-            #     print('EXCEPTION HERE 2')
-        # print(flight_data)
 
     def _parse_iata_code(self, response: requests.Response, city: str):
         """
@@ -67,11 +49,11 @@ class FlightSearch:
         except:
             print('EXC')
 
-    def flight_search_ryanair(self, flight_data):
+    def flight_search(self, flight_data):
         """
         Filtering flights in Ryanair according to parameters in flight_data dictionary
         """
-        self._get_iata_code_ryanair(flight_data)
+        self._get_iata_code(flight_data)
         departure_from = datetime.fromisoformat(flight_data['departureDate'])
         arrival_to = datetime.fromisoformat(flight_data['returnDate'])
         outbound_date = departure_from
@@ -89,10 +71,10 @@ class FlightSearch:
                 'currencyCode': flight_data['currencyCode'],
                 'max': flight_data['max']
             }
-            if flight_data['destinationLocationCode'] != []:
 
+            if flight_data['destinationLocationCode'] != []:
                 for idx, dest in enumerate(flight_data['destinationLocationCode']):
-                    query_params['arrivalAirportIataCode'] = dest,
+                    query_params['arrivalAirportIataCode'] = dest
                     response = requests.get(
                         url=self.url_flights_ryanair, params=query_params)
                     if self.search_result == {}:
@@ -100,21 +82,14 @@ class FlightSearch:
                     else:
                         self.search_result['fares'].extend(
                             response.json()['fares'])
-                    # self.search_result.update(response.json())
-                    # print(response.text)
             else:
                 response = requests.get(
                     url=self.url_flights_ryanair, params=query_params)
                 if self.search_result == {}:
-
                     self.search_result = response.json()
                 else:
                     self.search_result['fares'].extend(
                         response.json()['fares'])
-            # print(self.search_result)
             outbound_date = outbound_date + timedelta(1)
             inbound_date = outbound_date + \
                 timedelta(flight_data['durationOfStay'] - 1)
-        # print(response.url)
-
-        # print(self.search_result)

@@ -11,11 +11,18 @@ from datetime import datetime
 
 
 class ResultsDialog(QDialog):
+    """
+    Class used for displaying window with search results
+    """
+
     def __init__(self, api_response, parent=None):
         super().__init__(parent)
-        self.initUI_ryanair(api_response)
+        self.initUI(api_response)
 
-    def initUI_ryanair(self, api_response):
+    def initUI(self, api_response):
+        """
+        Function responsible for initializing GUI for Results Dialog
+        """
         self.setWindowTitle('Flight Search Results')
         self.resize(1400, 800)
 
@@ -51,9 +58,12 @@ class ResultsDialog(QDialog):
             self.show_context_menu)
 
         self.setLayout(layout)
-        self.display_results_ryanair(api_response)
+        self.show_results(api_response)
 
     def show_context_menu(self, position):
+        """
+        Function responsible for adding context menu
+        """
         menu = QMenu()
         copy_action = QAction("Copy", self)
         copy_action.triggered.connect(self.copy_selection)
@@ -61,6 +71,9 @@ class ResultsDialog(QDialog):
         menu.exec(self.results_table.viewport().mapToGlobal(position))
 
     def copy_selection(self):
+        """
+        Function responsible for adding copying functionality to context menu
+        """
         selection = self.results_table.selectedIndexes()
         if selection:
             rows = sorted(set(index.row() for index in selection))
@@ -78,7 +91,10 @@ class ResultsDialog(QDialog):
             clipboard = QApplication.clipboard()
             clipboard.setText(copy_text.strip())
 
-    def display_results_ryanair(self, api_response):
+    def show_results(self, api_response):
+        """
+        Function responsible for showing results from API response
+        """
         # Clear previous results
         self.results_table.setRowCount(0)
         if 'fares' in api_response and api_response['fares']:
@@ -102,8 +118,7 @@ class ResultsDialog(QDialog):
                 in_arr_time = datetime.fromisoformat(
                     fare['inbound']['arrivalDate']).strftime('%H:%M')
                 price_value = fare['summary']['price']['value']
-                price_currency = fare['summary']['price']['currencyCode']
-                price = f"{price_value}{price_currency}"
+                price = f"{price_value}"
 
                 self.results_table.setItem(
                     row, 0, QTableWidgetItem(flight_numbers))
@@ -121,7 +136,7 @@ class ResultsDialog(QDialog):
                     row, 6, QTableWidgetItem(in_dep_time))
                 self.results_table.setItem(
                     row, 7, QTableWidgetItem(in_arr_time))
-                
+
                 price_item = QTableWidgetItem(price)
                 price_item.setData(Qt.ItemDataRole.UserRole, price_value)
                 self.results_table.setItem(row, 8, price_item)
