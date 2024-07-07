@@ -18,7 +18,7 @@ class FlightSearch:
         self.search_result = None
         self.desinations = None
 
-    def _get_iata_code(self, flight_data):
+    def _get_iata_code(self, flight_data: dict):
         # Ryanair API needs IATA code for airport not city.
         """
         Getting IATA codes for all airport avaible at origin or destination selected in flight_data dictionary
@@ -51,7 +51,7 @@ class FlightSearch:
         except:
             print('EXC')
 
-    def flight_search(self, flight_data):
+    def flight_search(self, flight_data: dict):
         """
         Filtering flights in Ryanair according to parameters in flight_data dictionary
         """
@@ -96,7 +96,7 @@ class FlightSearch:
             inbound_date = outbound_date + \
                 timedelta(flight_data['durationOfStay'] - 1)
 
-    def destination_search(self, origin):
+    def destination_search(self, origin: str):
         response = requests.get(url=self.url_iata_codes)
         origin_code = self._parse_iata_code(response, origin)
 

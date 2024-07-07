@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
 
 from FlightSearch import FlightSearch
 from FareResultsDialog import ResultsDialog
+from DestinationsResultDialog import DestinationsResultDialog
 
 
 class FlightSearchApp(QWidget):
@@ -27,8 +28,11 @@ class FlightSearchApp(QWidget):
         origin_label = QLabel('Origin:')
         self.origin_input = QLineEdit()
         self.origin_input.setPlaceholderText('Krakow')
+        self.destination_search_button = QPushButton('Search Destinations')
+        self.destination_search_button.clicked.connect(self.search_destinations)
         origin_layout.addWidget(origin_label)
         origin_layout.addWidget(self.origin_input)
+        origin_layout.addWidget(self.destination_search_button)
 
         # Destination Input
         destination_layout_H = QHBoxLayout()
@@ -93,6 +97,14 @@ class FlightSearchApp(QWidget):
         # Set window title and size
         self.setWindowTitle('Flight Search App')
         self.resize(500, 600)
+
+    def search_destinations(self):
+        fs = FlightSearch()
+        origin = self.origin_input.text()
+        fs.destination_search(origin)
+
+        self.results_dialog = DestinationsResultDialog(fs.desinations, origin)
+        self.results_dialog.exec()
 
     def add_destination(self):
         destination = self.destination_input.text()
