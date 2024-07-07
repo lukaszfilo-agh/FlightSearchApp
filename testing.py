@@ -18,10 +18,10 @@ flight_data = {
 }
 
 fs = FlightSearch()
-fs.flight_search(flight_data)
+# fs.flight_search(flight_data)
 
-dict = fs.search_result
-pp.pprint(dict['fares'])
+# dict = fs.search_result
+# pp.pprint(dict['fares'])
 
 # for row, fare in enumerate(dict['fares']):
 #     # pp.pprint(fare)
@@ -42,3 +42,12 @@ pp.pprint(dict['fares'])
 #     print(fare['summary']['price']['value'])
 #     print(fare['summary']['price']['currencyCode'])
 #     print(row)
+
+
+fs.destination_search('Krakow')
+dict = fs.desinations
+# pp.pprint(dict)
+
+for row, dest in enumerate(dict):
+    print(row)
+    print(dest['arrivalAirport']['city']['name'])

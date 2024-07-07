@@ -14,7 +14,9 @@ class FlightSearch:
     def __init__(self) -> None:
         self.url_iata_codes = c.RYANAIR_URL_IATA_CODE
         self.url_flights_ryanair = c.RYANAIR_URL_FLIGHTS
+        self.url_destinations = c.RYANAIR_URL_DESTINATIONS
         self.search_result = None
+        self.desinations = None
 
     def _get_iata_code(self, flight_data):
         # Ryanair API needs IATA code for airport not city.
@@ -93,3 +95,11 @@ class FlightSearch:
             outbound_date = outbound_date + timedelta(1)
             inbound_date = outbound_date + \
                 timedelta(flight_data['durationOfStay'] - 1)
+
+    def destination_search(self, origin):
+        response = requests.get(url=self.url_iata_codes)
+        origin_code = self._parse_iata_code(response, origin)
+
+        url = f"{self.url_destinations}/{origin_code[0]}"
+
+        self.desinations = requests.get(url=url).json()

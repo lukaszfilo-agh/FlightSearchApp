@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
 )
 
 from FlightSearch import FlightSearch
-from ResultsDialog import ResultsDialog
+from FareResultsDialog import ResultsDialog
 
 
 class FlightSearchApp(QWidget):
