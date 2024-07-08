@@ -129,7 +129,11 @@ class FlightSearchApp(QWidget):
                 self.calendar_dialog.selected_date.toString('yyyy-MM-dd'))
 
     def search_flights(self):
-        origin = self.origin_input.text()
+        if self.origin_input.text() != '':
+            origin = self.origin_input.text()
+        else:
+            origin = 'Krakow'
+        # origin = self.origin_input.text()
         destinations = [self.destination_list.item(
             i).text() for i in range(self.destination_list.count())]
         start_date = self.start_date_label.text()

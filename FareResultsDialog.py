@@ -117,8 +117,8 @@ class ResultsDialog(QDialog):
                     fare['inbound']['departureDate']).strftime('%H:%M')
                 in_arr_time = datetime.fromisoformat(
                     fare['inbound']['arrivalDate']).strftime('%H:%M')
-                price_value = fare['summary']['price']['value']
-                price = f"{price_value}"
+                price_value = int(round(fare['summary']['price']['value']))
+                price = f"{fare['summary']['price']['value']}"
 
                 self.results_table.setItem(
                     row, 0, QTableWidgetItem(flight_numbers))
@@ -138,7 +138,15 @@ class ResultsDialog(QDialog):
                     row, 7, QTableWidgetItem(in_arr_time))
 
                 price_item = QTableWidgetItem(price)
-                price_item.setData(Qt.ItemDataRole.UserRole, price_value)
+                price_item.setData(Qt.ItemDataRole.DisplayRole, price_value)
+
+                if price_value < 300:
+                    price_item.setBackground(Qt.GlobalColor.darkGreen)
+                elif 300 <= price_value < 600:
+                    price_item.setBackground(Qt.GlobalColor.darkYellow)
+                else:
+                    price_item.setBackground(Qt.GlobalColor.red)
+
                 self.results_table.setItem(row, 8, price_item)
         else:
             # Display no results message
